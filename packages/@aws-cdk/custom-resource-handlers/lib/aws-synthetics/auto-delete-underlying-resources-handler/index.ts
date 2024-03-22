@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
+import { CloudWatchLogsClient, DeleteLogGroupCommand } from '@aws-sdk/client-cloudwatch-logs';
 import { LambdaClient, DeleteFunctionCommand } from '@aws-sdk/client-lambda';
 import { SyntheticsClient, GetCanaryCommand } from '@aws-sdk/client-synthetics';
 import { makeHandler } from '../../nodejs-entrypoint';
@@ -7,6 +8,7 @@ import { makeHandler } from '../../nodejs-entrypoint';
 const AUTO_DELETE_UNDERLYING_RESOURCES_TAG = 'aws-cdk:auto-delete-underlying-resources';
 
 const lambda = new LambdaClient({});
+const logs = new CloudWatchLogsClient({});
 const synthetics = new SyntheticsClient({});
 
 export const handler = makeHandler(autoDeleteHandler);
@@ -72,6 +74,13 @@ async function onDelete(canaryName: string) {
 
     await lambda.send(new DeleteFunctionCommand({
       FunctionName: unqualifedFunctionArn,
+    }));
+
+    let logGroupName = `/aws/lambda/${qualifiedFunctionArnComponents[-1]}`;
+    console.log(`Deleting log group ${logGroupName}`);
+
+    await logs.send( new DeleteLogGroupCommand({
+      logGroupName,
     }));
   } catch (error: any) {
     if (error.name !== 'ResourceNotFoundException') {
