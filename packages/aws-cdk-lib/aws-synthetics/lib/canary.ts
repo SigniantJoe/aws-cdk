@@ -229,6 +229,17 @@ export interface CanaryProps {
    * @default - no rules applied to the generated bucket.
    */
   readonly artifactsBucketLifecycleRules?: Array<s3.LifecycleRule>;
+
+  /**
+   * Removal policy for the generated canary artifact bucket. Has no effect
+   * if a bucket is passed to `artifactsBucketLocation`. If you pass a bucket
+   * to `artifactsBucketLocation`, you can add lifecycle rules to the bucket
+   * itself.
+   *
+   * @default - CDK Bucket default removal policy (RETAIN)
+   */
+  readonly artifactsBucketRemovalPolicy?: cdk.RemovalPolicy;
+
 }
 
 /**
@@ -288,6 +299,10 @@ export class Canary extends cdk.Resource implements ec2.IConnectable {
       enforceSSL: true,
       lifecycleRules: props.artifactsBucketLifecycleRules,
     });
+
+    if (props.artifactsBucketRemovalPolicy && !props.artifactsBucketLocation?.bucket) {
+      this.artifactsBucket.applyRemovalPolicy(props.artifactsBucketRemovalPolicy);
+    }
 
     this.role = props.role ?? this.createDefaultRole(props);
 
