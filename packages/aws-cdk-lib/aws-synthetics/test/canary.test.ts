@@ -788,6 +788,25 @@ describe('handler validation', () => {
     }).toThrow(/Canary Handler length must be between 1 and 128/);
   });
 
+  test('An auto-generated bucket is retained by default', () => {
+    // GIVEN
+    const stack = new Stack();
+
+    // WHEN
+    new synthetics.Canary(stack, 'Canary', {
+      test: synthetics.Test.custom({
+        handler: 'index.handler',
+        code: synthetics.Code.fromInline('/* Synthetics handler code */'),
+      }),
+      runtime: synthetics.Runtime.SYNTHETICS_NODEJS_PUPPETEER_3_8,
+    });
+
+    // THEN
+    Template.fromStack(stack).hasResource('AWS::S3::Bucket', {
+      DeletionPolicy: 'Retain',
+    });
+  });
+
   test('An auto-generated bucket can override removal policy', () => {
     // GIVEN
     const stack = new Stack();
