@@ -298,11 +298,9 @@ export class Canary extends cdk.Resource implements ec2.IConnectable {
       encryption: s3.BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       lifecycleRules: props.artifactsBucketLifecycleRules,
+      autoDeleteObjects: props.artifactsBucketRemovalPolicy === cdk.RemovalPolicy.DESTROY ? true : undefined,
+      removalPolicy: props.artifactsBucketRemovalPolicy,
     });
-
-    if (props.artifactsBucketRemovalPolicy && !props.artifactsBucketLocation?.bucket) {
-      this.artifactsBucket.applyRemovalPolicy(props.artifactsBucketRemovalPolicy);
-    }
 
     this.role = props.role ?? this.createDefaultRole(props);
 
