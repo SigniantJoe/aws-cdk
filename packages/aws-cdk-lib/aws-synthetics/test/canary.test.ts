@@ -805,6 +805,7 @@ describe('handler validation', () => {
     Template.fromStack(stack).hasResource('AWS::S3::Bucket', {
       DeletionPolicy: 'Retain',
     });
+    Template.fromStack(stack).resourceCountIs('Custom::S3AutoDeleteObjects', 0);
   });
 
   test('An auto-generated bucket can override removal policy', () => {
@@ -826,5 +827,6 @@ describe('handler validation', () => {
     Template.fromStack(stack).hasResource('AWS::S3::Bucket', {
       DeletionPolicy: 'Delete',
     });
+    Template.fromStack(stack).resourceCountIs('Custom::S3AutoDeleteObjects', 1);
   });
 });
